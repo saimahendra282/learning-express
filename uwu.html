@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Express File Fetch & Form Demo</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f4f4f4;
+      margin: 0;
+      padding: 20px;
+      color: #333;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      margin-top: 30px;
+    }
+
+    form, .file-section {
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 30px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    input[type="text"] {
+      padding: 10px;
+      width: 100%;
+      max-width: 300px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 1rem;
+    }
+
+    button {
+      padding: 10px 20px;
+      margin-top: 10px;
+      margin-right: 10px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    #response, #displayArea {
+      margin-top: 20px;
+      background: #fff;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 0 6px rgba(0, 0, 0, 0.05);
+    }
+
+    img, iframe, video {
+      width: 100%;
+      max-width: 600px;
+      border-radius: 8px;
+      margin-top: 10px;
+    }
+
+    @media (max-width: 768px) {
+      input[type="text"], button {
+        width: 100%;
+        margin-top: 10px;
+      }
+
+      iframe, video {
+        height: auto;
+      }
+    }
+
+    @media (max-width: 480px) {
+      body {
+        padding: 15px;
+      }
+
+      h1 {
+        font-size: 1.3rem;
+      }
+
+      button {
+        font-size: 0.95rem;
+      }
+
+      iframe {
+        height: 300px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Say Hello (Form Submission)</h1>
+  <form id="helloForm">
+    <input type="text" id="nameInput" placeholder="Enter your name" required />
+    <button type="submit">Send</button>
+  </form>
+  <div id="response"></div>
+
+  <h1>Fetch Files (Image, PDF, MP4)</h1>
+  <div class="file-section">
+    <button id="getImage">Get Image</button>
+    <button id="getPdf">Get PDF</button>
+    <button id="getMp4">Get MP4</button>
+  </div>
+
+  <div id="displayArea"></div>
+
+  <script>
+    const displayArea = document.getElementById('displayArea');
+
+    document.getElementById('getImage').onclick = async () => {
+      displayArea.innerHTML = '';
+      const res = await fetch('http://localhost:8888/express-route/mg');
+      if (!res.ok) return alert('Failed to fetch image');
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const img = document.createElement('img');
+      img.src = url;
+      displayArea.appendChild(img);
+    };
+
+    document.getElementById('getPdf').onclick = async () => {
+      displayArea.innerHTML = '';
+      const res = await fetch('http://localhost:8888/express-route/pdf');
+      if (!res.ok) return alert('Failed to fetch PDF');
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const iframe = document.createElement('iframe');
+      iframe.src = url;
+      iframe.width = '100%';
+      iframe.height = '500';
+      displayArea.appendChild(iframe);
+    };
+
+    document.getElementById('getMp4').onclick = async () => {
+      displayArea.innerHTML = '';
+      const res = await fetch('http://localhost:8888/express-route/mp4');
+      if (!res.ok) return alert('Failed to fetch MP4');
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const video = document.createElement('video');
+      video.src = url;
+      video.controls = true;
+      displayArea.appendChild(video);
+    };
+
+    document.getElementById('helloForm').addEventListener('submit', async e => {
+      e.preventDefault();
+      const name = document.getElementById('nameInput').value;
+      const res = await fetch('http://localhost:8888/express-route/f', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name })
+      });
+      const text = await res.text();
+      document.getElementById('response').innerText = text;
+    });
+  </script>
+
+</body>
+</html>
