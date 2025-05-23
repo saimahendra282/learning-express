@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Auth Demo</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      padding: 20px;
+      margin: 0;
+    }
+    h2 {
+      margin-top: 30px;
+      color: #333;
+    }
+    form {
+      background: #fff;
+      padding: 20px;
+      border-radius: 6px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      max-width: 400px;
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: bold;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 12px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 1rem;
+    }
+    button {
+      padding: 10px 20px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    #message, #tokenInfo {
+      background: #fff;
+      padding: 15px;
+      border-radius: 6px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+      max-width: 600px;
+      margin-top: 20px;
+      word-break: break-word;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Register</h2>
+  <form id="registerForm">
+    <label for="regEmail">Email</label>
+    <input type="email" id="regEmail" name="email" required />
+    <label for="regPasskey">Passkey</label>
+    <input type="password" id="regPasskey" name="passkey" required />
+    <button type="submit">Sign Up</button>
+  </form>
+
+  <h2>Login</h2>
+  <form id="loginForm">
+    <label for="loginEmail">Email</label>
+    <input type="email" id="loginEmail" name="email" required />
+    <label for="loginPasskey">Passkey</label>
+    <input type="password" id="loginPasskey" name="passkey" required />
+    <button type="submit">Log In</button>
+  </form>
+
+  <div id="message"></div>
+  <div id="tokenInfo"></div>
+
+  <script>
+    const apiBase = 'http://localhost:8888/express-route';
+    const messageDiv = document.getElementById('message');
+    const tokenInfoDiv = document.getElementById('tokenInfo');
+
+    // Helper: show message
+    function showMessage(text, isError=false) {
+      messageDiv.textContent = text;
+      messageDiv.style.color = isError ? 'red' : 'green';
+    }
+
+    // Parse JWT and display expiry
+    function displayToken(token) {
+      tokenInfoDiv.innerHTML = '<h3>JWT Token</h3><p>' + token + '</p>';
+      const parts = token.split('.');
+      if (parts.length !== 3) return;
+      try {
+        const payload = JSON.parse(atob(parts[1]));
+        if (payload.exp) {
+          const expDate = new Date(payload.exp * 1000);
+          const formatted = expDate.toLocaleString();
+          tokenInfoDiv.innerHTML += '<h4>Expires at:</h4><p>' + formatted + '</p>';
+        }
+      } catch (err) {
+        console.error('Failed to parse token payload', err);
+      }
+    }
+
+    // Register handler
+    document.getElementById('registerForm').addEventListener('submit', async e => {
+      e.preventDefault();
+      messageDiv.textContent = '';
+      tokenInfoDiv.textContent = '';
+
+      const email = document.getElementById('regEmail').value;
+      const passkey = document.getElementById('regPasskey').value;
+
+      try {
+        const res = await fetch(apiBase + '/signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, passkey })
+        });
+        const text = await res.text();
+        if (res.ok) {
+          showMessage('✅ ' + text);
+        } else {
+          showMessage('❌ ' + text, true);
+        }
+      } catch (err) {
+        showMessage('❌ Network error', true);
+      }
+    });
+
+    // Login handler
+    document.getElementById('loginForm').addEventListener('submit', async e => {
+      e.preventDefault();
+      messageDiv.textContent = '';
+      tokenInfoDiv.textContent = '';
+
+      const email = document.getElementById('loginEmail').value;
+      const passkey = document.getElementById('loginPasskey').value;
+
+      try {
+        const res = await fetch(apiBase + '/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, passkey })
+        });
+        if (res.ok) {
+          const { token } = await res.json();
+          showMessage('✅ Login successful');
+          displayToken(token);
+        } else {
+          const text = await res.text();
+          showMessage('❌ ' + text, true);
+        }
+      } catch (err) {
+        showMessage('❌ Network error', true);
+      }
+    });
+  </script>
+</body>
+</html>

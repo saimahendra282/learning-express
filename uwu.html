@@ -2,13 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Express File Fetch & Form Demo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Express File Fetch & Upload Demo</title>
   <style>
-    * {
-      box-sizing: border-box;
-    }
-
+    * { box-sizing: border-box; }
     body {
       font-family: 'Segoe UI', sans-serif;
       background: #f4f4f4;
@@ -17,10 +14,7 @@
       color: #333;
     }
 
-    h1 {
-      font-size: 1.5rem;
-      margin-top: 30px;
-    }
+    h1 { font-size: 1.5rem; margin-top: 30px; }
 
     form, .file-section {
       background: #fff;
@@ -30,7 +24,7 @@
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
     }
 
-    input[type="text"] {
+    input[type="text"], input[type="file"] {
       padding: 10px;
       width: 100%;
       max-width: 300px;
@@ -51,9 +45,7 @@
       font-size: 1rem;
     }
 
-    button:hover {
-      background-color: #0056b3;
-    }
+    button:hover { background-color: #0056b3; }
 
     #response, #displayArea {
       margin-top: 20px;
@@ -71,32 +63,15 @@
     }
 
     @media (max-width: 768px) {
-      input[type="text"], button {
-        width: 100%;
-        margin-top: 10px;
-      }
-
-      iframe, video {
-        height: auto;
-      }
+      input[type="text"], button { width: 100%; margin-top: 10px; }
+      iframe, video { height: auto; }
     }
 
     @media (max-width: 480px) {
-      body {
-        padding: 15px;
-      }
-
-      h1 {
-        font-size: 1.3rem;
-      }
-
-      button {
-        font-size: 0.95rem;
-      }
-
-      iframe {
-        height: 300px;
-      }
+      body { padding: 15px; }
+      h1 { font-size: 1.3rem; }
+      button { font-size: 0.95rem; }
+      iframe { height: 300px; }
     }
   </style>
 </head>
@@ -118,6 +93,13 @@
 
   <div id="displayArea"></div>
 
+  <h1>Upload File to S3</h1>
+  <form action="http://localhost:8888/express-route/upload-mg" method="POST" enctype="multipart/form-data">
+    <input type="file" name="file" />
+    <button type="submit">Upload</button>
+  </form>
+<button id="getAlgoMp4">Get Algo MP4</button>
+
   <script>
     const displayArea = document.getElementById('displayArea');
 
@@ -131,17 +113,28 @@
       img.src = url;
       displayArea.appendChild(img);
     };
+document.getElementById('getAlgoMp4').onclick = async () => {
+  displayArea.innerHTML = '';
+  const res = await fetch('http://localhost:8888/express-route/algomp4', {
+    headers: { Range: 'bytes=0-' } // trigger partial response
+  });
+  if (!res.ok) return alert('Failed to stream Algo MP4');
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const video = document.createElement('video');
+  video.src = url;
+  video.controls = true;
+  video.autoplay = true;
+  displayArea.appendChild(video);
+};
 
-    document.getElementById('getPdf').onclick = async () => {
+    document.getElementById('getPdf').onclick = () => {
       displayArea.innerHTML = '';
-      const res = await fetch('http://localhost:8888/express-route/pdf');
-      if (!res.ok) return alert('Failed to fetch PDF');
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
       const iframe = document.createElement('iframe');
-      iframe.src = url;
+      iframe.src = 'http://localhost:8888/express-route/pdf'; // direct URL instead of blob
       iframe.width = '100%';
-      iframe.height = '500';
+      iframe.height = '600';
+      iframe.style.border = 'none';
       displayArea.appendChild(iframe);
     };
 

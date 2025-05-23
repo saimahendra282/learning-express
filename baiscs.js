@@ -11,7 +11,8 @@ const formRouter    = require('./routeskosam/form');
 const imgRouter     = require('./routeskosam/img');
 const pdfRouter     = require('./routeskosam/pdf');
 const mp4Router     = require('./routeskosam/mp4');
-
+const algomp4Router  = require('./routeskosam/algomp4');
+const mysqlRouter   = require('./routeskosam/rdsmysql'); // Uncomment if needed
 // ────────────────────────────────────────────────────
 // 2. APP SETUP
 // ────────────────────────────────────────────────────
@@ -64,8 +65,11 @@ app.use('/express-route', expressroutes); // routeskosam/stringu.js
 app.use('/express-route', formRouter);    // routeskosam/form.js
 app.use('/express-route', imgRouter);     // routeskosam/img.js
 app.use('/express-route', pdfRouter);     // routeskosam/pdf.js
-app.use('/express-route', mp4Router);     // routeskosam/mp4.js
+// app.use('/express-route', mp4Router);     // routeskosam/mp4.js
+app.use('/express-route', algomp4Router); // routeskosam/algomp4.js
 
+// Uncomment if you want to use the MySQL router
+app.use('/express-route', mysqlRouter);   // routeskosam/rdsmysql.js
 // ────────────────────────────────────────────────────
 // 5. START SERVER
 // ────────────────────────────────────────────────────
